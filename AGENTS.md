@@ -18,5 +18,5 @@
 
 - This repo exists to practice spec-driven development. Two repo-local skills: `/spec` (designs `specs/NN-slug.md`, asks questions, never writes code) and `/spec-impl` (implements only specs whose status means "Approved"; pauses after each plan step for diff review; never commits automatically).
 - Specs live in `specs/NN-slug.md` (`specs/` may not exist yet — `/spec` creates it). Header state machine: Draft → In review → Approved → Implemented (Spanish equivalents accepted). `specs/.spec-config.yml` (`AutoCreateBranch`) controls branch creation.
-- Gotcha: this directory is not a git repo. `/spec-impl` assumes git branches exist; `git init` is needed before using its branch workflow.
+- Default branch is `main`; remote `origin` is `https://github.com/abis7/pac-man.git`. `/spec-impl` creates `spec-NN-slug` branches, so branch from a clean `main`.
 - `.agents/skills/` and `skills-lock.json` are managed by the skill installer — don't edit by hand.
