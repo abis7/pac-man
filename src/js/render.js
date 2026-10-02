@@ -134,6 +134,19 @@ function drawGhost( ctx, g, color ) {
   }
 }
 
+// Nombre del fantasma sobre su sprite. Ayuda a verificar las cuatro
+// personalidades sin instrumentar nada mas (tecla G).
+function drawGhostName( ctx, g ) {
+  const { cx, cy } = cellCenter( g.x, g.y );
+  ctx.fillStyle = '#fff';
+  ctx.font = '8px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText( window.GHOST_NAMES[ g.kind ] || '', cx, cy - TILE / 2 + 1 );
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+}
+
 function drawHUD( ctx, game, W ) {
   ctx.fillStyle = '#fff';
   ctx.font = '14px "Courier New", monospace';
@@ -144,7 +157,12 @@ function drawHUD( ctx, game, W ) {
   ctx.fillText( 'VIDAS ' + game.lives, W * TILE - 8, 4 );
 }
 
-const GHOST_COLORS = [ '#ff0000', '#00ffff', '#ffb8ff', '#ffb852' ];
+const GHOST_COLORS = {
+  blinky: '#ff0000',
+  pinky: '#ffb8ff',
+  inky: '#00ffff',
+  clyde: '#ffb852',
+};
 
 function draw( ctx, game, frame ) {
   const grid = game.grid;
@@ -158,7 +176,8 @@ function draw( ctx, game, frame ) {
   drawDoor( ctx, grid );
   drawDots( ctx, grid );
   drawPacman( ctx, game.pacman, frame );
-  game.ghosts.forEach( ( g, i ) => drawGhost( ctx, g, GHOST_COLORS[ i ] || '#ff0000' ) );
+  game.ghosts.forEach( ( g ) => drawGhost( ctx, g, GHOST_COLORS[ g.kind ] || '#ff0000' ) );
+  if ( game.showGhostNames ) game.ghosts.forEach( ( g ) => drawGhostName( ctx, g ) );
   drawHUD( ctx, game, W );
 }
 

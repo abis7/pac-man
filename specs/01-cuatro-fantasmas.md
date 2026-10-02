@@ -59,9 +59,10 @@ const CLYDE_CHASE_DISTANCE = 8;       // Manhattan, en celdas
 
 // Objetivo de cada personaje. Devuelve la celda que el fantasma
 // quiere alcanzar; decideGhostDir elige la dirección más cercana a ella.
+// Usa DIRS y canMove de game.js, de ahí el cuarto argumento.
 function ghostTarget( ghost, pacman, ghosts );
 
-function decideGhostDir( ghost, pacman, ghosts );
+function decideGhostDir( ghost, pacman, ghosts, grid );
 
 window.GHOST_NAMES = GHOST_NAMES;
 window.ghostTarget = ghostTarget;

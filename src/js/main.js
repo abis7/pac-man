@@ -17,6 +17,11 @@ const KEY_DIR = {
 };
 
 document.addEventListener( 'keydown', ( e ) => {
+  // G alterna las etiquetas de nombre sobre los fantasmas.
+  if ( e.key === 'g' || e.key === 'G' ) {
+    game.showGhostNames = !game.showGhostNames;
+    return;
+  }
   const dir = KEY_DIR[ e.key ];
   if ( !dir ) return;
   e.preventDefault();
