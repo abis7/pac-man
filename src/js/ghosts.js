@@ -75,9 +75,30 @@ function legalDirs( ghost, grid ) {
   return opts.length ? opts : [ OPPOSITE[ ghost.dir ] ];
 }
 
+// Modo asustado (frightened): huye eligiendo entre las direcciones legales
+// la que mas aleja a Pacman. Los fantasmas 'eaten' no deciden aqui: salen
+// de la pen por la ruta forzada de moveGhost.
+function frightenedDir( ghost, pacman, grid ) {
+  const opts = legalDirs( ghost, grid );
+  const pcell = cellOf( pacman );
+  let best = opts[ 0 ];
+  let bestDist = -1;
+  for ( const dir of opts ) {
+    const d = window.DIRS[ dir ];
+    const dist = manhattan( { x: ghost.x + d.x, y: ghost.y + d.y }, pcell );
+    if ( dist > bestDist ) {
+      bestDist = dist;
+      best = dir;
+    }
+  }
+  return best;
+}
+
 // Elige, entre las direcciones legales, la que acerca mas el fantasma a
 // su celda objetivo. Regla comun a los cuatro personajes.
 function decideGhostDir( ghost, pacman, ghosts, grid ) {
+  if ( ghost.state === 'frightened' ) return frightenedDir( ghost, pacman, grid );
+
   const target = ghostTarget( ghost, pacman, ghosts );
   const choices = legalDirs( ghost, grid );
   let best = choices[ 0 ];
@@ -97,3 +118,4 @@ function decideGhostDir( ghost, pacman, ghosts, grid ) {
 window.GHOST_NAMES = GHOST_NAMES;
 window.ghostTarget = ghostTarget;
 window.decideGhostDir = decideGhostDir;
+window.OPPOSITE = OPPOSITE;
