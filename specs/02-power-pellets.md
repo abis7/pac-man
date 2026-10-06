@@ -1,6 +1,6 @@
 # SPEC 02 — Power Pellets
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** —
 > **Fecha:** 2026-10-06
 > **Objetivo:** Añadir cuatro Power Pellets que, al ser comidos, activan un modo "frightened" limitado: durante este modo Pac-Man puede comer fantasmas, que al ser comidos vuelven a la casa (pen) para reactivarse. Añadir representación visual, estados de fantasmas y colisiones correctas.
