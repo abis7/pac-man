@@ -67,13 +67,20 @@ function drawDoor( ctx, grid ) {
 }
 
 function drawDots( ctx, grid ) {
-  ctx.fillStyle = DOT_COLOR;
   for ( let y = 0; y < grid.length; y++ ) {
     for ( let x = 0; x < grid[ 0 ].length; x++ ) {
-      if ( grid[ y ][ x ] !== 2 ) continue;
+      const v = grid[ y ][ x ];
+      if ( v !== 2 && v !== 4 ) continue;
       const { cx, cy } = cellCenter( x, y );
       ctx.beginPath();
-      ctx.arc( cx, cy, 2.5, 0, Math.PI * 2 );
+      if ( v === 4 ) {
+        // Power pellet: notablemente mas grande y blanco.
+        ctx.fillStyle = '#ffffff';
+        ctx.arc( cx, cy, 5, 0, Math.PI * 2 );
+      } else {
+        ctx.fillStyle = DOT_COLOR;
+        ctx.arc( cx, cy, 2.5, 0, Math.PI * 2 );
+      }
       ctx.fill();
     }
   }
@@ -164,6 +171,19 @@ const GHOST_COLORS = {
   clyde: '#ffb852',
 };
 
+// Color del cuerpo segun el estado del fantasma: 'eaten' en gris claro,
+// 'frightened' en azul y en los ultimos 2 s parpadeando azul/blanco.
+function ghostBodyColor( g, game ) {
+  if ( g.state === 'eaten' ) return '#bbbbbb';
+  if ( g.state === 'frightened' ) {
+    const t = game.frightened.timer;
+    const parpadea =
+      t <= window.FRIGHTENED_BLINK && Math.floor( t / 15 ) % 2 === 0;
+    return parpadea ? '#ffffff' : '#2121ff';
+  }
+  return GHOST_COLORS[ g.kind ] || '#ff0000';
+}
+
 function draw( ctx, game, frame ) {
   const grid = game.grid;
   const W = grid[ 0 ].length;
@@ -176,7 +196,7 @@ function draw( ctx, game, frame ) {
   drawDoor( ctx, grid );
   drawDots( ctx, grid );
   drawPacman( ctx, game.pacman, frame );
-  game.ghosts.forEach( ( g ) => drawGhost( ctx, g, GHOST_COLORS[ g.kind ] || '#ff0000' ) );
+  game.ghosts.forEach( ( g ) => drawGhost( ctx, g, ghostBodyColor( g, game ) ) );
   if ( game.showGhostNames ) game.ghosts.forEach( ( g ) => drawGhostName( ctx, g ) );
   drawHUD( ctx, game, W );
 }
