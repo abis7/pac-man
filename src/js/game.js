@@ -41,6 +41,9 @@ function createGame() {
       dir: 'up',
       speed: GHOST_SPEED,
       kind: g.kind,
+      // true mientras el fantasma aun no ha salido de la pen: la IA
+      // normal no se aplica hasta que sale (ver moveGhost).
+      leavingPen: true,
     } ) ),
   };
 }
@@ -140,9 +143,10 @@ function resetPositions( game ) {
   p.dir = 'left';
   p.nextDir = null;
   game.ghosts.forEach( ( g, i ) => {
-    g.x = GHOST_STARTS[ i ].x;
-    g.y = GHOST_STARTS[ i ].y;
+    g.x = Math.round( GHOST_STARTS[ i ].x );
+    g.y = Math.round( GHOST_STARTS[ i ].y );
     g.dir = 'up';
+    g.leavingPen = true;
   } );
 }
 
