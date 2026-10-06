@@ -51,9 +51,13 @@ const MAZE = MAZE_STR.map( ( row ) => row.split( '' ).map( parseTile ) );
 
 const TUNNEL_ROW = 14;
 const PACMAN_START = { x: 13, y: 23 };
+// Orden significativo: Blinky es el indice 0 y se actualiza primero en
+// cada frame, que es lo que Inky necesita para calcular su objetivo.
 const GHOST_STARTS = [
-  { x: 13, y: 14, kind: 'hunter' }, // dentro de la pen
-  { x: 14, y: 14, kind: 'random' }, // dentro de la pen
+  { x: 14, y: 14, kind: 'blinky' },
+  { x: 13, y: 14, kind: 'pinky' },
+  { x: 12, y: 14, kind: 'inky' },
+  { x: 11, y: 14, kind: 'clyde' },
 ];
 
 window.MAZE = MAZE;
