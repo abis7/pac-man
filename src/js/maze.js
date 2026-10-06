@@ -51,6 +51,17 @@ const MAZE = MAZE_STR.map( ( row ) => row.split( '' ).map( parseTile ) );
 
 const TUNNEL_ROW = 14;
 const PACMAN_START = { x: 13, y: 23 };
+
+// Geometria de la casa de fantasmas (pen). Interior x 11-16 / y 13-15;
+// la puerta (tiles '-') esta en la fila 12, columnas 13-14.
+const PEN = {
+  minX: 11,
+  maxX: 16,
+  minY: 13,
+  maxY: 15,
+  doorY: 12,
+  doorXs: [ 13, 14 ],
+};
 // Orden significativo: Blinky es el indice 0 y se actualiza primero en
 // cada frame, que es lo que Inky necesita para calcular su objetivo.
 const GHOST_STARTS = [
@@ -64,3 +75,4 @@ window.MAZE = MAZE;
 window.TUNNEL_ROW = TUNNEL_ROW;
 window.PACMAN_START = PACMAN_START;
 window.GHOST_STARTS = GHOST_STARTS;
+window.PEN = PEN;

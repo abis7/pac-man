@@ -41,6 +41,9 @@ function createGame() {
       dir: 'up',
       speed: GHOST_SPEED,
       kind: g.kind,
+      // true mientras el fantasma aun no ha salido de la pen: la IA
+      // normal no se aplica hasta que sale (ver moveGhost).
+      leavingPen: true,
     } ) ),
   };
 }
@@ -50,14 +53,17 @@ function aligned( v ) {
 }
 
 // Una celda es muro para el actor dado?
-//   pacman: bloqueado por pared (1) y puerta (3)
-//   ghost:  bloqueado solo por pared (1)
+//   pacman:      bloqueado por pared (1) y puerta (3)
+//   ghost:       bloqueado por pared (1) y tambien por la puerta (3):
+//                un fantasma normal ya liberado no vuelve a entrar en la pen
+//   ghost-home:  solo bloqueado por pared (1); usa quien esta saliendo de
+//                la pen o regresando a ella, y puede cruzar la puerta (3)
 function isWall( grid, x, y, actor ) {
   if ( y < 0 || y >= grid.length ) return true;
   if ( x < 0 || x >= grid[ 0 ].length ) return true;
   const v = grid[ y ][ x ];
   if ( v === 1 ) return true;
-  if ( v === 3 && actor === 'pacman' ) return true;
+  if ( v === 3 ) return actor !== 'ghost-home';
   return false;
 }
 
@@ -116,6 +122,24 @@ function decideGhost( game, g ) {
   g.dir = window.decideGhostDir( g, game.pacman, game.ghosts, game.grid );
 }
 
+// La celda (x,y) pertenece al area de la pen (interior o puerta)?
+function inPenCell( x, y ) {
+  const P = window.PEN;
+  const dentro =
+    x >= P.minX && x <= P.maxX && y >= P.minY && y <= P.maxY;
+  return dentro || ( y === P.doorY && P.doorXs.indexOf( x ) !== -1 );
+}
+
+// Direccion para salir de la pen desde la celda alineada (x,y): primero se
+// avanza hasta las columnas de puerta y despues hacia arriba. Garantiza una
+// salida ordenada aunque el fantasma arranque descentrado en el interior.
+function exitDir( g ) {
+  const P = window.PEN;
+  if ( g.x < P.doorXs[ 0 ] ) return 'right';
+  if ( g.x > P.doorXs[ P.doorXs.length - 1 ] ) return 'left';
+  return 'up';
+}
+
 function moveGhost( game, g ) {
   const grid = game.grid;
   const width = grid[ 0 ].length;
@@ -123,8 +147,23 @@ function moveGhost( game, g ) {
   if ( aligned( g.x ) && aligned( g.y ) ) {
     g.x = Math.round( g.x );
     g.y = Math.round( g.y );
-    decideGhost( game, g );
-    if ( !canMove( grid, g.x, g.y, g.dir, 'ghost' ) ) return;
+
+    // Salida de la pen: mientras este en su interior o en la puerta se
+    // fuerza la ruta hacia fuera; al quedar fuera, la IA normal toma el
+    // control (y si venia 'eaten', se regenera como 'normal').
+    if ( g.leavingPen ) {
+      if ( inPenCell( g.x, g.y ) ) {
+        g.dir = exitDir( g );
+        if ( !canMove( grid, g.x, g.y, g.dir, 'ghost-home' ) ) return;
+      } else {
+        g.leavingPen = false;
+        if ( g.state === 'eaten' ) g.state = 'normal';
+      }
+    }
+    if ( !g.leavingPen ) {
+      decideGhost( game, g );
+      if ( !canMove( grid, g.x, g.y, g.dir, 'ghost' ) ) return;
+    }
   }
 
   const d = DIRS[ g.dir ];
@@ -140,9 +179,10 @@ function resetPositions( game ) {
   p.dir = 'left';
   p.nextDir = null;
   game.ghosts.forEach( ( g, i ) => {
-    g.x = GHOST_STARTS[ i ].x;
-    g.y = GHOST_STARTS[ i ].y;
+    g.x = Math.round( GHOST_STARTS[ i ].x );
+    g.y = Math.round( GHOST_STARTS[ i ].y );
     g.dir = 'up';
+    g.leavingPen = true;
   } );
 }
 

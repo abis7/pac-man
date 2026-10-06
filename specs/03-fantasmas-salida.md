@@ -1,6 +1,6 @@
 # SPEC 03 — Corrección de salida de fantasmas desde el punto inicial
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** —
 > **Fecha:** 2026-10-06
 > **Objetivo:** Corregir el comportamiento de los fantasmas al salir de su punto inicial (casa/pen): establecer correctamente su posición y dirección en la salida, evitar que aparezcan "encajados" o se muevan erráticamente al iniciar o al reingresar, y hacerlo por etapas para facilitar implementación y verificación.
