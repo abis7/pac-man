@@ -36,6 +36,7 @@ function createGame() {
     grid,
     frightened: { active: false, timer: 0, eatenCount: 0 },
     adapt: createAdapt(),
+    mapShift: createMapShift(),
     showAdaptDebug: false,
     pacman: {
       x: PACMAN_START.x,
