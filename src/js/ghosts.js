@@ -32,22 +32,28 @@ function manhattan( a, b ) {
 
 // Celda que el fantasma quiere alcanzar. La celda objetivo no necesita
 // ser transitable: el fantasma se detiene al llegar a ella.
-function ghostTarget( ghost, pacman, ghosts ) {
+// 'game' es opcional: con nivel de aprendizaje L = 0 (o sin game) se
+// reproduce exactamente la IA clasica; con L > 0 se usa la prediccion de
+// adapt.js sobre los giros observados del jugador.
+function ghostTarget( ghost, pacman, ghosts, game ) {
   const pcell = cellOf( pacman );
+  const L = game ? window.effectiveLevel( game ) : 0;
 
   switch ( ghost.kind ) {
     // Caza directa: la celda exacta de Pacman.
     case 'blinky':
-      return pcell;
+      return L >= window.ADAPT_THRESHOLD ? window.predictPacman( game, 2 ) : pcell;
 
     // Emboscada: cuatro celdas por delante de Pacman.
     case 'pinky':
-      return aheadOf( pacman, 4 );
+      return L > 0
+        ? window.predictPacman( game, 4 + Math.round( 4 * L ) )
+        : aheadOf( pacman, 4 );
 
     // Vector: punto medio entre Blinky y dos celdas por delante de Pacman.
     case 'inky': {
       const blinky = ghosts.find( ( g ) => g.kind === 'blinky' );
-      const pivot = aheadOf( pacman, 2 );
+      const pivot = L > 0 ? window.predictPacman( game, 2 ) : aheadOf( pacman, 2 );
       const b = cellOf( blinky || ghost );
       return {
         x: Math.round( ( b.x + pivot.x ) / 2 ),
@@ -56,10 +62,15 @@ function ghostTarget( ghost, pacman, ghosts ) {
     }
 
     // Cazador timido: persigue de lejos, se retira a su esquina de cerca.
-    case 'clyde':
-      return manhattan( cellOf( ghost ), pcell ) > CLYDE_CHASE_DISTANCE
-        ? pcell
-        : CLYDE_CORNER;
+    // Con aprendizaje alto se retira a la zona favorita del jugador.
+    case 'clyde': {
+      if ( manhattan( cellOf( ghost ), pcell ) > CLYDE_CHASE_DISTANCE ) return pcell;
+      if ( L >= window.ADAPT_THRESHOLD ) {
+        const hot = window.hotspot( game, cellOf( ghost ), CLYDE_CHASE_DISTANCE );
+        if ( hot ) return hot;
+      }
+      return CLYDE_CORNER;
+    }
 
     default:
       return pcell;
@@ -96,10 +107,10 @@ function frightenedDir( ghost, pacman, grid ) {
 
 // Elige, entre las direcciones legales, la que acerca mas el fantasma a
 // su celda objetivo. Regla comun a los cuatro personajes.
-function decideGhostDir( ghost, pacman, ghosts, grid ) {
+function decideGhostDir( ghost, pacman, ghosts, grid, game ) {
   if ( ghost.state === 'frightened' ) return frightenedDir( ghost, pacman, grid );
 
-  const target = ghostTarget( ghost, pacman, ghosts );
+  const target = ghostTarget( ghost, pacman, ghosts, game );
   const choices = legalDirs( ghost, grid );
   let best = choices[ 0 ];
   let bestDist = Infinity;

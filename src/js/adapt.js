@@ -69,14 +69,58 @@ function effectiveLevel( game ) {
 }
 
 // Celda a la que llegara Pacman tras 'steps' celdas siguiendo sus giros
-// mas frecuentes.
+// mas frecuentes. Limita por pasos (no por distancia), asi el tunel no
+// puede causar bucles.
 function predictPacman( game, steps ) {
-  return { x: Math.round( game.pacman.x ), y: Math.round( game.pacman.y ) };
+  const grid = game.grid;
+  const W = grid[ 0 ].length;
+  const opp = window.OPPOSITE;
+  let x = Math.round( game.pacman.x );
+  let y = Math.round( game.pacman.y );
+  let dir = game.pacman.dir;
+
+  for ( let i = 0; i < steps; i++ ) {
+    if ( isIntersection( grid, x, y ) ) {
+      const t = game.adapt.turns[ x + ',' + y + ',' + dir ];
+      if ( t ) {
+        let total = 0;
+        let best = null;
+        for ( const d of Object.keys( t ) ) {
+          total += t[ d ];
+          if ( d !== opp[ dir ] && window.canMove( grid, x, y, d, 'pacman' ) &&
+               ( best === null || t[ d ] > t[ best ] ) ) best = d;
+        }
+        if ( best && total >= MIN_TURN_SAMPLES ) dir = best;
+      }
+    }
+    if ( !window.canMove( grid, x, y, dir, 'pacman' ) ) {
+      const alt = Object.keys( window.DIRS ).find(
+        ( d ) => d !== opp[ dir ] && window.canMove( grid, x, y, d, 'pacman' )
+      );
+      if ( !alt ) break;
+      dir = alt;
+    }
+    x += window.DIRS[ dir ].x;
+    y += window.DIRS[ dir ].y;
+    if ( y === TUNNEL_ROW ) x = ( x + W ) % W;
+  }
+  return { x, y };
 }
 
 // Celda con mas calor a distancia Manhattan mayor que minDist de 'from'.
 function hotspot( game, from, minDist ) {
-  return null;
+  const heat = game.adapt.heat;
+  let best = null;
+  let bestHeat = 0;
+  for ( let y = 0; y < heat.length; y++ ) {
+    for ( let x = 0; x < heat[ y ].length; x++ ) {
+      if ( heat[ y ][ x ] <= bestHeat ) continue;
+      if ( Math.abs( x - from.x ) + Math.abs( y - from.y ) <= minDist ) continue;
+      bestHeat = heat[ y ][ x ];
+      best = { x, y };
+    }
+  }
+  return best;
 }
 
 window.ADAPT_THRESHOLD = ADAPT_THRESHOLD;

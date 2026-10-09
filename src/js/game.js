@@ -152,7 +152,7 @@ function movePacman( game ) {
 // con la rejilla, y el orden de game.ghosts mantiene a Blinky (indice 0)
 // actualizado antes que Inky.
 function decideGhost( game, g ) {
-  g.dir = window.decideGhostDir( g, game.pacman, game.ghosts, game.grid );
+  g.dir = window.decideGhostDir( g, game.pacman, game.ghosts, game.grid, game );
 }
 
 // La celda (x,y) pertenece al area de la pen (interior o puerta)?
