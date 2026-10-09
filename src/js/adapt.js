@@ -23,18 +23,49 @@ function createAdapt() {
   };
 }
 
+// Interseccion: celda con 3 o mas salidas transitables para Pacman.
+function isIntersection( grid, x, y ) {
+  let n = 0;
+  for ( const dir of Object.keys( window.DIRS ) ) {
+    if ( window.canMove( grid, x, y, dir, 'pacman' ) ) n++;
+  }
+  return n >= 3;
+}
+
 // Se llama desde movePacman cuando Pacman esta alineado y ya aplico su giro:
 // p.dir es la direccion con la que sale de la celda.
 function recordPacman( game ) {
+  const a = game.adapt;
+  const p = game.pacman;
+  if ( a.lastCell && a.lastCell.x === p.x && a.lastCell.y === p.y ) return;
+
+  a.heat[ p.y ][ p.x ] += 1;
+  if ( a.lastDir && isIntersection( game.grid, p.x, p.y ) ) {
+    const key = p.x + ',' + p.y + ',' + a.lastDir;
+    const t = a.turns[ key ] || ( a.turns[ key ] = { left: 0, right: 0, up: 0, down: 0 } );
+    t[ p.dir ]++;
+    a.samples++;
+  }
+  a.lastCell = { x: p.x, y: p.y };
+  a.lastDir = p.dir;
 }
 
 // Una vez por frame: decaimiento del calor y nivel de aprendizaje.
 function tickAdapt( game ) {
+  const a = game.adapt;
+  a.decayTimer++;
+  if ( a.decayTimer >= HEAT_DECAY_EVERY ) {
+    a.decayTimer = 0;
+    for ( const row of a.heat )
+      for ( let x = 0; x < row.length; x++ ) row[ x ] *= HEAT_DECAY;
+  }
+  a.level = ADAPT_MAX * Math.min( 1, a.samples / SAMPLES_FULL );
 }
 
 // Nivel de aprendizaje efectivo (lo usan los fantasmas y el HUD).
 function effectiveLevel( game ) {
-  return 0;
+  if ( !game || !game.adapt ) return 0;
+  return game.adapt.level;
 }
 
 // Celda a la que llegara Pacman tras 'steps' celdas siguiendo sus giros

@@ -160,6 +160,12 @@ function drawHUD( ctx, game, W ) {
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
   ctx.fillText( 'SCORE ' + game.score, 8, 4 );
+  ctx.textAlign = 'center';
+  ctx.fillText(
+    'IA ' + Math.round( window.effectiveLevel( game ) * 100 ) + '%',
+    W * TILE / 2,
+    4
+  );
   ctx.textAlign = 'right';
   ctx.fillText( 'VIDAS ' + game.lives, W * TILE - 8, 4 );
 }

@@ -123,6 +123,8 @@ function movePacman( game ) {
       p.dir = p.nextDir;
       p.nextDir = null;
     }
+    // Perfil del jugador: solo se actualiza alineado a la rejilla.
+    recordPacman( game );
     // Comer dot o power pellet.
     const tile = grid[ p.y ][ p.x ];
     if ( tile === 2 ) {
@@ -255,6 +257,7 @@ function update( game ) {
     }
   }
 
+  tickAdapt( game );
   movePacman( game );
   game.ghosts.forEach( ( g ) => moveGhost( game, g ) );
 
