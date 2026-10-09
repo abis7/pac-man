@@ -37,6 +37,7 @@ function createGame() {
     frightened: { active: false, timer: 0, eatenCount: 0 },
     adapt: createAdapt(),
     mapShift: createMapShift(),
+    fruit: createFruit(),
     showAdaptDebug: false,
     pacman: {
       x: PACMAN_START.x,
@@ -133,10 +134,12 @@ function movePacman( game ) {
       grid[ p.y ][ p.x ] = 0;
       game.score += 10;
       game.dotsRemaining--;
+      game.fruit.dotsEaten++;
     } else if ( tile === 4 ) {
       grid[ p.y ][ p.x ] = 0;
       game.score += POWER_PELLET_SCORE;
       game.dotsRemaining--;
+      game.fruit.dotsEaten++;
       frightenGhosts( game );
     }
     // Si no puede seguir, se detiene en la celda.
@@ -285,6 +288,7 @@ function update( game ) {
     break;
   }
 
+  tickFruit( game );
   tickMapShift( game );
 
   if ( game.dotsRemaining <= 0 ) game.state = 'won';

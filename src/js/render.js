@@ -170,6 +170,24 @@ function drawHUD( ctx, game, W ) {
   ctx.fillText( 'VIDAS ' + game.lives, W * TILE - 8, 4 );
 }
 
+// Fruta: circulo de color con tallo; parpadea los ultimos 2 s.
+function drawFruit( ctx, game, frame ) {
+  const f = game.fruit;
+  if ( !f.active ) return;
+  if ( f.timer < 120 && Math.floor( frame / 8 ) % 2 === 0 ) return;
+  const { cx, cy } = cellCenter( f.x, f.y );
+  ctx.fillStyle = window.fruitInfo( f.kind ).color;
+  ctx.beginPath();
+  ctx.arc( cx, cy + 1, 6, 0, Math.PI * 2 );
+  ctx.fill();
+  ctx.strokeStyle = '#3c9d2f';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo( cx, cy - 4 );
+  ctx.lineTo( cx + 3, cy - 8 );
+  ctx.stroke();
+}
+
 // Aviso de cambio de mapa: las celdas de la compuerta parpadean
 // (rojo = se cierra, verde = se abre).
 function drawShiftWarning( ctx, game, frame ) {
@@ -244,6 +262,7 @@ function draw( ctx, game, frame ) {
   drawDots( ctx, grid );
   if ( game.showAdaptDebug ) drawAdaptDebug( ctx, game );
   drawShiftWarning( ctx, game, frame );
+  drawFruit( ctx, game, frame );
   drawPacman( ctx, game.pacman, frame );
   game.ghosts.forEach( ( g ) => drawGhost( ctx, g, ghostBodyColor( g, game ) ) );
   if ( game.showGhostNames ) game.ghosts.forEach( ( g ) => drawGhostName( ctx, g ) );
