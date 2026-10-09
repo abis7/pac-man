@@ -36,6 +36,7 @@ function createGame() {
     grid,
     frightened: { active: false, timer: 0, eatenCount: 0 },
     adapt: createAdapt(),
+    showAdaptDebug: false,
     pacman: {
       x: PACMAN_START.x,
       y: PACMAN_START.y,

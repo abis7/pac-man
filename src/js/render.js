@@ -170,6 +170,32 @@ function drawHUD( ctx, game, W ) {
   ctx.fillText( 'VIDAS ' + game.lives, W * TILE - 8, 4 );
 }
 
+// Depuracion (tecla H): calor del jugador y celda predicha por la IA.
+function drawAdaptDebug( ctx, game ) {
+  const heat = game.adapt.heat;
+  let max = 0;
+  for ( const row of heat ) for ( const v of row ) if ( v > max ) max = v;
+  if ( max > 0 ) {
+    for ( let y = 0; y < heat.length; y++ ) {
+      for ( let x = 0; x < heat[ y ].length; x++ ) {
+        if ( heat[ y ][ x ] <= 0 ) continue;
+        ctx.fillStyle = 'rgba(255, 0, 0, ' + ( 0.6 * heat[ y ][ x ] / max ).toFixed( 2 ) + ')';
+        ctx.fillRect( x * TILE, y * TILE, TILE, TILE );
+      }
+    }
+  }
+  const t = window.predictPacman( game, 4 );
+  const { cx, cy } = cellCenter( t.x, t.y );
+  ctx.strokeStyle = '#0f0';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo( cx - 6, cy - 6 );
+  ctx.lineTo( cx + 6, cy + 6 );
+  ctx.moveTo( cx + 6, cy - 6 );
+  ctx.lineTo( cx - 6, cy + 6 );
+  ctx.stroke();
+}
+
 const GHOST_COLORS = {
   blinky: '#ff0000',
   pinky: '#ffb8ff',
@@ -201,6 +227,7 @@ function draw( ctx, game, frame ) {
   drawWalls( ctx, grid );
   drawDoor( ctx, grid );
   drawDots( ctx, grid );
+  if ( game.showAdaptDebug ) drawAdaptDebug( ctx, game );
   drawPacman( ctx, game.pacman, frame );
   game.ghosts.forEach( ( g ) => drawGhost( ctx, g, ghostBodyColor( g, game ) ) );
   if ( game.showGhostNames ) game.ghosts.forEach( ( g ) => drawGhostName( ctx, g ) );
