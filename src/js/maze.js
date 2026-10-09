@@ -73,7 +73,21 @@ const GHOST_STARTS = [
   { x: 11, y: 14, kind: 'clyde' },
 ];
 
+// Compuertas del mapa dinamico (ver mapshift.js). Pares de celdas simetricos
+// respecto al eje central. En MAZE_STR las abiertas ya son '.' y las
+// cerradas '#', asi que MAZE no cambia. Cualquier combinacion abierta/cerrada
+// mantiene el laberinto conectado y sin callejones.
+const MAZE_GATES = [
+  { id: 'A', cells: [ { x: 13, y: 1 }, { x: 14, y: 1 } ], startsOpen: false },
+  { id: 'B', cells: [ { x: 13, y: 8 }, { x: 14, y: 8 } ], startsOpen: false },
+  { id: 'C', cells: [ { x: 13, y: 20 }, { x: 14, y: 20 } ], startsOpen: false },
+  { id: 'D', cells: [ { x: 13, y: 26 }, { x: 14, y: 26 } ], startsOpen: false },
+  { id: 'E', cells: [ { x: 13, y: 5 }, { x: 14, y: 5 } ], startsOpen: true },
+  { id: 'F', cells: [ { x: 13, y: 29 }, { x: 14, y: 29 } ], startsOpen: true },
+];
+
 window.MAZE = MAZE;
+window.MAZE_GATES = MAZE_GATES;
 window.TUNNEL_ROW = TUNNEL_ROW;
 window.PACMAN_START = PACMAN_START;
 window.GHOST_STARTS = GHOST_STARTS;

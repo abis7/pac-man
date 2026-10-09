@@ -10,6 +10,7 @@ const DIRS = {
 };
 const PACMAN_SPEED = 0.125; // 1/8 celda/frame -> alinea cada 8 frames
 const GHOST_SPEED = 0.1;    // 1/10 celda/frame
+const TURBO_SPEED = 0.2;    // 1/5 celda/frame: cae exacto en la rejilla
 
 const POWER_PELLET_SCORE = 50;
 const FRIGHTENED_DURATION = 360; // ~6 s a 60 fps (nivel 1 del arcade)
@@ -35,7 +36,12 @@ function createGame() {
     showGhostNames: false,
     grid,
     frightened: { active: false, timer: 0, eatenCount: 0 },
+    adapt: createAdapt(),
+    mapShift: createMapShift(),
+    fruit: createFruit(),
+    showAdaptDebug: false,
     pacman: {
+      ability: { kind: null, timer: 0, total: 0 },
       x: PACMAN_START.x,
       y: PACMAN_START.y,
       dir: 'left',
@@ -122,16 +128,21 @@ function movePacman( game ) {
       p.dir = p.nextDir;
       p.nextDir = null;
     }
+    // Perfil del jugador y velocidad (turbo): solo se cambian alineado.
+    recordPacman( game );
+    p.speed = p.ability.kind === 'turbo' ? TURBO_SPEED : PACMAN_SPEED;
     // Comer dot o power pellet.
     const tile = grid[ p.y ][ p.x ];
     if ( tile === 2 ) {
       grid[ p.y ][ p.x ] = 0;
       game.score += 10;
       game.dotsRemaining--;
+      game.fruit.dotsEaten++;
     } else if ( tile === 4 ) {
       grid[ p.y ][ p.x ] = 0;
       game.score += POWER_PELLET_SCORE;
       game.dotsRemaining--;
+      game.fruit.dotsEaten++;
       frightenGhosts( game );
     }
     // Si no puede seguir, se detiene en la celda.
@@ -148,7 +159,7 @@ function movePacman( game ) {
 // con la rejilla, y el orden de game.ghosts mantiene a Blinky (indice 0)
 // actualizado antes que Inky.
 function decideGhost( game, g ) {
-  g.dir = window.decideGhostDir( g, game.pacman, game.ghosts, game.grid );
+  g.dir = window.decideGhostDir( g, game.pacman, game.ghosts, game.grid, game );
 }
 
 // La celda (x,y) pertenece al area de la pen (interior o puerta)?
@@ -207,6 +218,11 @@ function resetPositions( game ) {
   p.y = PACMAN_START.y;
   p.dir = 'left';
   p.nextDir = null;
+  // Perder una vida cancela la habilidad y retira la fruta en pantalla.
+  p.speed = PACMAN_SPEED;
+  p.ability.kind = null;
+  p.ability.timer = 0;
+  game.fruit.active = false;
   // Tras perder una vida el modo frightened se cancela y todos los
   // fantasmas vuelven a su punto inicial en modo normal.
   game.frightened.active = false;
@@ -254,8 +270,11 @@ function update( game ) {
     }
   }
 
+  tickAdapt( game );
   movePacman( game );
-  game.ghosts.forEach( ( g ) => moveGhost( game, g ) );
+  // Congelar: los fantasmas no se mueven (pero siguen siendo letales).
+  if ( game.pacman.ability.kind !== 'congelar' )
+    game.ghosts.forEach( ( g ) => moveGhost( game, g ) );
 
   for ( const g of game.ghosts ) {
     if ( !collides( game.pacman, g ) ) continue;
@@ -270,6 +289,9 @@ function update( game ) {
       continue;
     }
 
+    // Escudo: el fantasma normal no hace dano ni da puntos.
+    if ( game.pacman.ability.kind === 'escudo' ) continue;
+
     game.lives--;
     if ( game.lives <= 0 ) {
       game.state = 'lost';
@@ -278,6 +300,9 @@ function update( game ) {
     resetPositions( game );
     break;
   }
+
+  tickFruit( game );
+  tickMapShift( game );
 
   if ( game.dotsRemaining <= 0 ) game.state = 'won';
 }

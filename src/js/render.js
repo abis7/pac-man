@@ -97,6 +97,16 @@ function drawPacman( ctx, p, frame ) {
   // Boca animada: abre/cierra con el frame.
   const open = ( Math.sin( frame * 0.3 ) * 0.5 + 0.5 ) * 0.28 + 0.02;
 
+  // Aro de habilidad activa.
+  if ( p.ability && p.ability.kind ) {
+    const info = window.abilityInfo( p.ability.kind );
+    ctx.strokeStyle = info.color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc( cx, cy, TILE / 2 + 1, 0, Math.PI * 2 );
+    ctx.stroke();
+  }
+
   ctx.fillStyle = '#ffff00';
   ctx.beginPath();
   ctx.moveTo( cx, cy );
@@ -160,8 +170,90 @@ function drawHUD( ctx, game, W ) {
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
   ctx.fillText( 'SCORE ' + game.score, 8, 4 );
+  ctx.textAlign = 'center';
+  ctx.fillText(
+    'IA ' + Math.round( window.effectiveLevel( game ) * 100 ) + '%',
+    W * TILE / 2,
+    4
+  );
   ctx.textAlign = 'right';
   ctx.fillText( 'VIDAS ' + game.lives, W * TILE - 8, 4 );
+  ctx.textAlign = 'left';
+
+  // Habilidad activa: nombre y barra de tiempo restante (borde inferior).
+  const ab = game.pacman.ability;
+  if ( ab.kind ) {
+    const info = window.abilityInfo( ab.kind );
+    const barW = 160;
+    const x0 = ( W * TILE - barW ) / 2;
+    ctx.fillStyle = info.color;
+    ctx.textAlign = 'center';
+    ctx.fillText( info.label, W * TILE / 2, game.grid.length * TILE - 36 );
+    ctx.fillRect( x0, game.grid.length * TILE - 16, barW * ( ab.timer / ab.total ), 6 );
+    ctx.strokeStyle = info.color;
+    ctx.lineWidth = 1;
+    ctx.strokeRect( x0, game.grid.length * TILE - 16, barW, 6 );
+    ctx.textAlign = 'left';
+  }
+}
+
+// Fruta: circulo de color con tallo; parpadea los ultimos 2 s.
+function drawFruit( ctx, game, frame ) {
+  const f = game.fruit;
+  if ( !f.active ) return;
+  if ( f.timer < 120 && Math.floor( frame / 8 ) % 2 === 0 ) return;
+  const { cx, cy } = cellCenter( f.x, f.y );
+  ctx.fillStyle = window.fruitInfo( f.kind ).color;
+  ctx.beginPath();
+  ctx.arc( cx, cy + 1, 6, 0, Math.PI * 2 );
+  ctx.fill();
+  ctx.strokeStyle = '#3c9d2f';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo( cx, cy - 4 );
+  ctx.lineTo( cx + 3, cy - 8 );
+  ctx.stroke();
+}
+
+// Aviso de cambio de mapa: las celdas de la compuerta parpadean
+// (rojo = se cierra, verde = se abre).
+function drawShiftWarning( ctx, game, frame ) {
+  const pend = game.mapShift.pending;
+  if ( !pend || Math.floor( frame / 10 ) % 2 === 0 ) return;
+  const mark = ( id, color ) => {
+    if ( !id ) return;
+    ctx.fillStyle = color;
+    for ( const c of window.gateById( id ).cells )
+      ctx.fillRect( c.x * TILE, c.y * TILE, TILE, TILE );
+  };
+  mark( pend.close, 'rgba(255, 60, 60, 0.6)' );
+  mark( pend.open, 'rgba(60, 255, 90, 0.6)' );
+}
+
+// Depuracion (tecla H): calor del jugador y celda predicha por la IA.
+function drawAdaptDebug( ctx, game ) {
+  const heat = game.adapt.heat;
+  let max = 0;
+  for ( const row of heat ) for ( const v of row ) if ( v > max ) max = v;
+  if ( max > 0 ) {
+    for ( let y = 0; y < heat.length; y++ ) {
+      for ( let x = 0; x < heat[ y ].length; x++ ) {
+        if ( heat[ y ][ x ] <= 0 ) continue;
+        ctx.fillStyle = 'rgba(255, 0, 0, ' + ( 0.6 * heat[ y ][ x ] / max ).toFixed( 2 ) + ')';
+        ctx.fillRect( x * TILE, y * TILE, TILE, TILE );
+      }
+    }
+  }
+  const t = window.predictPacman( game, 4 );
+  const { cx, cy } = cellCenter( t.x, t.y );
+  ctx.strokeStyle = '#0f0';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo( cx - 6, cy - 6 );
+  ctx.lineTo( cx + 6, cy + 6 );
+  ctx.moveTo( cx + 6, cy - 6 );
+  ctx.lineTo( cx - 6, cy + 6 );
+  ctx.stroke();
 }
 
 const GHOST_COLORS = {
@@ -195,6 +287,9 @@ function draw( ctx, game, frame ) {
   drawWalls( ctx, grid );
   drawDoor( ctx, grid );
   drawDots( ctx, grid );
+  if ( game.showAdaptDebug ) drawAdaptDebug( ctx, game );
+  drawShiftWarning( ctx, game, frame );
+  drawFruit( ctx, game, frame );
   drawPacman( ctx, game.pacman, frame );
   game.ghosts.forEach( ( g ) => drawGhost( ctx, g, ghostBodyColor( g, game ) ) );
   if ( game.showGhostNames ) game.ghosts.forEach( ( g ) => drawGhostName( ctx, g ) );

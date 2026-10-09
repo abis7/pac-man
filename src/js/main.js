@@ -22,6 +22,11 @@ document.addEventListener( 'keydown', ( e ) => {
     game.showGhostNames = !game.showGhostNames;
     return;
   }
+  // H alterna la vista de depuracion del aprendizaje (calor y prediccion).
+  if ( e.key === 'h' || e.key === 'H' ) {
+    game.showAdaptDebug = !game.showAdaptDebug;
+    return;
+  }
   const dir = KEY_DIR[ e.key ];
   if ( !dir ) return;
   e.preventDefault();
