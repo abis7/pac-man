@@ -8,8 +8,8 @@
 
 ## Architecture
 
-- Classic script tags, no modules/imports. Load order in `src/index.html` matters: `maze.js` → `game.js` → `render.js` → `main.js`.
-- Files communicate only via `window` globals: `MAZE`, `TUNNEL_ROW`, `PACMAN_START`, `GHOST_STARTS` (maze.js); `createGame`, `update`, `DIRS` (game.js); `draw` (render.js). New shared code must export on `window` and add its `<script>` tag in dependency order.
+- Classic script tags, no modules/imports. Load order in `src/index.html` matters: `maze.js` → `adapt.js` → `ghosts.js` → `mapshift.js` → `fruits.js` → `game.js` → `render.js` → `main.js`.
+- Files communicate only via `window` globals: `MAZE`, `MAZE_GATES`, `TUNNEL_ROW`, `PACMAN_START`, `GHOST_STARTS` (maze.js); `createGame`, `update`, `DIRS` (game.js); `draw` (render.js). New shared code must export on `window` and add its `<script>` tag in dependency order.
 - Grid is 28 cols x 31 rows, cell coords (x, y) origin top-left. Tile codes: `#` wall(1), `.` dot(2), space walkable(0), `-` ghost-pen door(3).
 - `MAZE` is pristine and never mutated: `createGame()` deep-copies it into `game.grid` so eaten dots don't corrupt restarts. Renderer draws from `game.grid`, never `MAZE`.
 - Game states: `start` | `playing` | `won` | `lost`. `main.js` owns the rAF loop, keyboard, and overlay; `game.js` owns rules, movement, and collisions.

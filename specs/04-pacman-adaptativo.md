@@ -1,6 +1,6 @@
 # SPEC 04 — Pac-Man adaptativo: fantasmas que aprenden, mapa que cambia y frutas con habilidades
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01, SPEC 02, SPEC 03
 > **Fecha:** 2026-10-07
 > **Objetivo:** Convertir el Pac-Man actual en un juego adaptativo donde los fantasmas aprenden durante la partida las rutas y giros del jugador, el laberinto abre y cierra compuertas a medida que se comen dots, y cada fruta otorga a Pac-Man una habilidad temporal.
