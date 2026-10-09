@@ -285,6 +285,8 @@ function update( game ) {
     break;
   }
 
+  tickMapShift( game );
+
   if ( game.dotsRemaining <= 0 ) game.state = 'won';
 }
 

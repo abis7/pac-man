@@ -170,6 +170,21 @@ function drawHUD( ctx, game, W ) {
   ctx.fillText( 'VIDAS ' + game.lives, W * TILE - 8, 4 );
 }
 
+// Aviso de cambio de mapa: las celdas de la compuerta parpadean
+// (rojo = se cierra, verde = se abre).
+function drawShiftWarning( ctx, game, frame ) {
+  const pend = game.mapShift.pending;
+  if ( !pend || Math.floor( frame / 10 ) % 2 === 0 ) return;
+  const mark = ( id, color ) => {
+    if ( !id ) return;
+    ctx.fillStyle = color;
+    for ( const c of window.gateById( id ).cells )
+      ctx.fillRect( c.x * TILE, c.y * TILE, TILE, TILE );
+  };
+  mark( pend.close, 'rgba(255, 60, 60, 0.6)' );
+  mark( pend.open, 'rgba(60, 255, 90, 0.6)' );
+}
+
 // Depuracion (tecla H): calor del jugador y celda predicha por la IA.
 function drawAdaptDebug( ctx, game ) {
   const heat = game.adapt.heat;
@@ -228,6 +243,7 @@ function draw( ctx, game, frame ) {
   drawDoor( ctx, grid );
   drawDots( ctx, grid );
   if ( game.showAdaptDebug ) drawAdaptDebug( ctx, game );
+  drawShiftWarning( ctx, game, frame );
   drawPacman( ctx, game.pacman, frame );
   game.ghosts.forEach( ( g ) => drawGhost( ctx, g, ghostBodyColor( g, game ) ) );
   if ( game.showGhostNames ) game.ghosts.forEach( ( g ) => drawGhostName( ctx, g ) );
