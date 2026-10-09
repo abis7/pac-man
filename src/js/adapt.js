@@ -37,6 +37,7 @@ function isIntersection( grid, x, y ) {
 function recordPacman( game ) {
   const a = game.adapt;
   const p = game.pacman;
+  if ( p.ability.kind === 'niebla' ) return;
   if ( a.lastCell && a.lastCell.x === p.x && a.lastCell.y === p.y ) return;
 
   a.heat[ p.y ][ p.x ] += 1;
@@ -62,9 +63,10 @@ function tickAdapt( game ) {
   a.level = ADAPT_MAX * Math.min( 1, a.samples / SAMPLES_FULL );
 }
 
-// Nivel de aprendizaje efectivo (lo usan los fantasmas y el HUD).
+// Con la habilidad Niebla los fantasmas vuelven a la IA clasica.
 function effectiveLevel( game ) {
   if ( !game || !game.adapt ) return 0;
+  if ( game.pacman.ability && game.pacman.ability.kind === 'niebla' ) return 0;
   return game.adapt.level;
 }
 

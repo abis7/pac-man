@@ -178,6 +178,23 @@ function drawHUD( ctx, game, W ) {
   );
   ctx.textAlign = 'right';
   ctx.fillText( 'VIDAS ' + game.lives, W * TILE - 8, 4 );
+  ctx.textAlign = 'left';
+
+  // Habilidad activa: nombre y barra de tiempo restante (borde inferior).
+  const ab = game.pacman.ability;
+  if ( ab.kind ) {
+    const info = window.abilityInfo( ab.kind );
+    const barW = 160;
+    const x0 = ( W * TILE - barW ) / 2;
+    ctx.fillStyle = info.color;
+    ctx.textAlign = 'center';
+    ctx.fillText( info.label, W * TILE / 2, game.grid.length * TILE - 36 );
+    ctx.fillRect( x0, game.grid.length * TILE - 16, barW * ( ab.timer / ab.total ), 6 );
+    ctx.strokeStyle = info.color;
+    ctx.lineWidth = 1;
+    ctx.strokeRect( x0, game.grid.length * TILE - 16, barW, 6 );
+    ctx.textAlign = 'left';
+  }
 }
 
 // Fruta: circulo de color con tallo; parpadea los ultimos 2 s.

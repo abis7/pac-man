@@ -272,7 +272,9 @@ function update( game ) {
 
   tickAdapt( game );
   movePacman( game );
-  game.ghosts.forEach( ( g ) => moveGhost( game, g ) );
+  // Congelar: los fantasmas no se mueven (pero siguen siendo letales).
+  if ( game.pacman.ability.kind !== 'congelar' )
+    game.ghosts.forEach( ( g ) => moveGhost( game, g ) );
 
   for ( const g of game.ghosts ) {
     if ( !collides( game.pacman, g ) ) continue;
