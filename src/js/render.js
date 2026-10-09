@@ -97,6 +97,16 @@ function drawPacman( ctx, p, frame ) {
   // Boca animada: abre/cierra con el frame.
   const open = ( Math.sin( frame * 0.3 ) * 0.5 + 0.5 ) * 0.28 + 0.02;
 
+  // Aro de habilidad activa.
+  if ( p.ability && p.ability.kind ) {
+    const info = window.abilityInfo( p.ability.kind );
+    ctx.strokeStyle = info.color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc( cx, cy, TILE / 2 + 1, 0, Math.PI * 2 );
+    ctx.stroke();
+  }
+
   ctx.fillStyle = '#ffff00';
   ctx.beginPath();
   ctx.moveTo( cx, cy );

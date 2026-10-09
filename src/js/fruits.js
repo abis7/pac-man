@@ -28,6 +28,12 @@ function tickFruit( game ) {
   const f = game.fruit;
   const p = game.pacman;
 
+  // Habilidad activa: cuenta atras.
+  if ( p.ability.kind ) {
+    p.ability.timer--;
+    if ( p.ability.timer <= 0 ) p.ability.kind = null;
+  }
+
   // Aparicion.
   if ( !f.active && f.spawned < FRUIT_SPAWNS.length && f.dotsEaten >= FRUIT_SPAWNS[ f.spawned ] ) {
     f.kind = FRUIT_KINDS[ f.spawned ].kind;
@@ -44,6 +50,9 @@ function tickFruit( game ) {
   if ( Math.abs( p.x - f.x ) < 1e-3 && Math.abs( p.y - f.y ) < 1e-3 ) {
     const info = fruitInfo( f.kind );
     game.score += info.points;
+    p.ability.kind = info.ability;
+    p.ability.timer = info.duration;
+    p.ability.total = info.duration;
     f.active = false;
   }
 }
